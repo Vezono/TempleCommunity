@@ -63,6 +63,12 @@ class View:
             types.InlineKeyboardButton(text="🏡Доми", callback_data=HOUSE_HELP_CALLBACK),
             types.InlineKeyboardButton(text="✡️Жиди та гої", callback_data=JEWISH_HELP_CALLBACK)
         )
+        kb.add(
+            types.InlineKeyboardButton(text="💻Команди (як щось зробити?)", callback_data=COMMANDS_HELP_CALLBACK)
+        )
+        kb.add(
+            types.InlineKeyboardButton(text="❓Інші питання", callback_data=WHY_HELP_CALLBACK)
+        )
 
         tts = (f"📖Тора редакції {VERSION}:\n\n"
                f"Вітаю, я Храмова Варта, або просто Варта - електронна система Храмового лору, традицій та приколів. "

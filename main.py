@@ -42,7 +42,7 @@ def found_handler(m: types.Message):
 
     if m.from_user.id != lawyer_id:
         bot.respond_to(m, "🙇‍♀️Сорі, поки шо тільки Юрист може створювати дома. "
-                          "Коли бот буде готовий, то усі зможуть.")
+                          "Коли Варта буде готова, то усі зможуть.")
 
     name = m.text.split(" ", 1)[1]
 
@@ -107,15 +107,14 @@ def profile_handler(m: types.Message):
     tts = user.profile()
     if user.status == 'goi':
         tts += (f"\n\n*Чому ти гой?*\n"
-                f"Тому що ти новачок, і не пройшов \"стажування\". "
-                f"Стажування проходиться в єврейських домах (/registry).")
+                f"Тому що ти новачок, і не пройшов \"стажування\". Почитай Тору. /tora.")
     if user.house == '':
         tts += (f"\n\n*Чому ти безхатько?*\n"
                 f"Тому що не вступив в дім, або не створив свій!")
     bot.respond_to(m, tts, parse_mode="Markdown")
 
 
-@bot.message_handler(commands=['help'])
+@bot.message_handler(commands=['help', 'tora'])
 def help_handler(m: types.Message):
     root_handler(m)
 
@@ -177,6 +176,39 @@ def chat_rules_callback(c: types.CallbackQuery):
     bot.edit_message_text(tts, c.message.chat.id, c.message.id, parse_mode="Markdown", reply_markup=kb)
 
 
+@bot.callback_query_handler(lambda c: c.data.startswith(WHY_HELP_CALLBACK))
+def chat_rules_callback(c: types.CallbackQuery):
+    kb = types.InlineKeyboardMarkup()
+    kb.add(types.InlineKeyboardButton(text="↩️Назад до Тори", callback_data=MAIN_HELP_CALLBACK))
+
+    tts = ("- Чому я ще не можу додавати гоїв? Робити щось з домом? Чому все за мене робить Юрист?\n"
+           "- Тому що Варта ще не готова. Почекайте трохи.\n\n"
+           "- Звідки будуть братись гроші?\n"
+           "- Усі члени дому будуть заробляти по формулі. Також можна заробляти на ставках з битви гоїв "
+           "і за продаж Предметів.\n\n"
+           "- В мене було дофіга гоїв. Де вони всі?\n"
+           "- Гої зі старого реєстру аннулюються. Гої до вашого дому повинні вступити знову. Вербуйте.\n\n"
+           "- Нафіга цей бот взагалі? Він не потрібен\n"
+           "- <tg-spoiler>Іді нахуй</tg-spoiler>")
+
+    bot.edit_message_text(tts, c.message.chat.id, c.message.id, parse_mode="HTML", reply_markup=kb)
+
+
+@bot.callback_query_handler(lambda c: c.data.startswith(COMMANDS_HELP_CALLBACK))
+def chat_rules_callback(c: types.CallbackQuery):
+    kb = types.InlineKeyboardMarkup()
+    kb.add(types.InlineKeyboardButton(text="↩️Назад до Тори", callback_data=MAIN_HELP_CALLBACK))
+
+    tts = ("💻Список команд Варти:\n\n"
+           "/tora - почитати Тору.\n"
+           "/profile - паспорт громадянина Храму.\n"
+           "/registry - реєстр домів Храму.\n"
+           "/house - інформація про ваш дім.\n"
+           "/found - заснувати дім. Не забудьте надати ім'я.\n")
+
+    bot.edit_message_text(tts, c.message.chat.id, c.message.id, parse_mode="Markdown", reply_markup=kb)
+
+
 @bot.callback_query_handler(lambda c: c.data.startswith(HOUSE_HELP_CALLBACK))
 def chat_rules_callback(c: types.CallbackQuery):
     kb = types.InlineKeyboardMarkup()
@@ -187,6 +219,21 @@ def chat_rules_callback(c: types.CallbackQuery):
            "За дотримуванням згоди слідкує Юрист.\n\n"
            "Нових голів назначають консенсусом поточних голів дому. Конфлікти під час прибирання голів допомагає "
            "вирішуватти Суддя або Верховна Жриця.")
+
+    bot.edit_message_text(tts, c.message.chat.id, c.message.id, parse_mode="Markdown", reply_markup=kb)
+
+
+@bot.callback_query_handler(lambda c: c.data.startswith(JEWISH_HELP_CALLBACK))
+def chat_rules_callback(c: types.CallbackQuery):
+    kb = types.InlineKeyboardMarkup()
+    kb.add(types.InlineKeyboardButton(text="↩️Назад до Тори", callback_data=MAIN_HELP_CALLBACK))
+
+    tts = ("✡️Жиди - це зазвичай олдфаги чату. Ми любимо євреїв, вони прикольні. Слово жид у нас навпаки "
+           "суспільній думці обозначає високий стан у суспільстві.\n"
+           "🤷Гої - не євреї. Зазвичай це новачки або люди які не пройшли стажування в єврейських домах. "
+           "Це не обов'язково погані люди.\n"
+           "☪️Невірні гої, або нижчі гої - люди які займаються гойством. Гойство - це щось дурне, "
+           "некультурне або неприйнятне. Ми тут таких не любимо.\n")
 
     bot.edit_message_text(tts, c.message.chat.id, c.message.id, parse_mode="Markdown", reply_markup=kb)
 
