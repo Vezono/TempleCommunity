@@ -9,6 +9,7 @@ class Bot(TeleBot):
         return f'<a href="tg://user?id={user_id}">{name}</a>'
 
     def respond_to(self, message, text, **kwargs):
+        text = text.replace("_", "\\_")
         return self.send_message(message.chat.id, text, **kwargs)
 
     def edit_menu(self, callback: types.CallbackQuery, text, keyboard, **kwargs):

@@ -9,6 +9,8 @@ from db.house import House
 from db import db
 from core.router import router
 from core.context import Context, UpdateType
+from db.invitation import Invitation
+from db.invitation_participant import InvitationParticipant
 from utils import Bot, MatrixIndexPlacer
 from views.house_view import HouseView
 from views.invintation_view import InvitationView
@@ -17,7 +19,7 @@ from controllers.tora_controller import ToraController
 import logging
 
 
-logging.basicConfig(level=logging.INFO)
+logging.basicConfig(level=logging.WARNING)
 
 bot = Bot(telegram_token)
 
@@ -101,7 +103,19 @@ def ss_handler(m: types.Message):
 
     root_handler(m.reply_to_message)
 
-    bot.respond_to(m, f"🔪Успішно.")
+    if not m.text.count(' '):
+        bot.respond_to(m, f"🔪Успішно.")
+        return
+
+    invitation_id = int(m.text.split(' ', 1)[1])
+    invitation = db.get_invitation(invitation_id)
+    user = db.get_user(m.reply_to_message.from_user.id)
+    participant = InvitationParticipant(user=user, invitation_id=invitation.id)
+    participant.save()
+    invitation.participants.append(participant)
+    invitation.save()
+
+    bot.respond_to(m, f"🔪Інфузовано успішно.")
 
 
 @bot.message_handler(commands=['pay'])
@@ -142,16 +156,19 @@ def house_handler(m: types.Message):
     bot.respond_to(m, "📢Гроші перекинуті успішно.")
 
 
-
 @bot.message_handler(commands=['invite'])
 def house_handler(m: types.Message):
     root_handler(m)
 
-    if not m.reply_to_message:
+    tg_user = None
+
+    if m.reply_to_message:
+        tg_user = m.reply_to_message.from_user
+    else:
         bot.respond_to(m, "🤕І шо?")
         return
 
-    goi = db.get_user(m.reply_to_message.from_user.id)
+    goi = db.get_user(tg_user.id)
     user = db.get_user(m.from_user.id)
     house = db.get_house(user.house)
 
@@ -177,6 +194,28 @@ def house_handler(m: types.Message):
 
     i_view = InvitationView(invitation)
     bot.respond_to(m, i_view.get_text(), parse_mode="Markdown", reply_markup=i_view.get_keyboard())
+
+
+@bot.message_handler(commands=['invites'])
+def house_handler(m: types.Message):
+    root_handler(m)
+
+    tts = "📃Усі активні запрошення: "
+
+    mp = MatrixIndexPlacer(4)
+    buttons = []
+    kb = types.InlineKeyboardMarkup()
+
+    for invitation in Invitation.objects():
+        buttons.append(types.InlineKeyboardButton(
+            text=f"№{invitation.id}", callback_data=f"{VIEW_INVITATION_CALLBACK} {invitation.id}"
+        ))
+
+    rows = mp.place(buttons)
+    for row in rows:
+        kb.add(*row)
+
+    bot.respond_to(m, tts, parse_mode="Markdown", reply_markup=kb)
 
 
 @bot.message_handler(commands=['house'])
@@ -282,6 +321,16 @@ def invitation_pend(c: types.CallbackQuery):
     invitation.status = 'accepted'
     invitation.save()
 
+    if invitation.ready:
+        goi = db.get_user(invitation.goi_id)
+        goi.house = invitation.house_id
+        goi.save()
+        invitation.delete()
+        tts = i_view.get_info_text()
+        tts += "\n♻Одноголосно прийнято. Заявка закрита."
+        bot.edit_message_text(tts, c.message.chat.id, c.message.id, parse_mode="Markdown")
+        return
+
     bot.edit_message_text(i_view.get_text(), c.message.chat.id, c.message.id, reply_markup=i_view.get_keyboard(),
                           parse_mode="Markdown")
 
@@ -346,6 +395,7 @@ def invitation_approve(c: types.CallbackQuery):
     if not invitation:
         bot.answer_callback_query(c.id, "🤕Ойойой...", show_alert=False)
         bot.edit_message_text(f"🤕Запрошення №{invitation_id} вже загубили.", c.message.chat.id, c.message.id)
+        return
 
     user = db.get_user(c.from_user.id)
     participant = invitation.get_participant(user.id)
@@ -360,7 +410,69 @@ def invitation_approve(c: types.CallbackQuery):
     participant.status = 'approved'
     participant.save()
 
+    if invitation.ready:
+        goi = db.get_user(invitation.goi_id)
+        goi.house = invitation.house_id
+        goi.save()
+        invitation.delete()
+        tts = i_view.get_info_text()
+        tts += "\n♻Одноголосно прийнято. Заявка закрита."
+        bot.edit_message_text(tts, c.message.chat.id, c.message.id, parse_mode="Markdown")
+        return
+
     bot.edit_message_text(i_view.get_text(), c.message.chat.id, c.message.id, reply_markup=i_view.get_keyboard(),
+                          parse_mode="Markdown")
+
+
+@bot.callback_query_handler(lambda c: c.data.startswith(INVITATION_LIST_CALLBACK))
+def invitation_approve(c: types.CallbackQuery):
+    tts = "📃Усі активні запрошення: "
+
+    mp = MatrixIndexPlacer(4)
+    buttons = []
+    kb = types.InlineKeyboardMarkup()
+
+    for invitation in Invitation.objects():
+        buttons.append(types.InlineKeyboardButton(
+            text=f"№{invitation.id}", callback_data=f"{VIEW_INVITATION_CALLBACK} {invitation.id}"
+        ))
+
+    rows = mp.place(buttons)
+    for row in rows:
+        kb.add(*row)
+
+    bot.edit_message_text(tts, c.message.chat.id, c.message.id, reply_markup=kb,
+                          parse_mode="Markdown")
+
+
+@bot.callback_query_handler(lambda c: c.data.startswith(VIEW_INVITATION_CALLBACK))
+def invitation_approve(c: types.CallbackQuery):
+    invitation_id = int(c.data.split(' ', 1)[1])
+    invitation = db.get_invitation(invitation_id)
+
+    if not invitation:
+        bot.answer_callback_query(c.id, "🤕Ойойой...", show_alert=False)
+        bot.edit_message_text(f"🤕Запрошення №{invitation_id} вже загубили.", c.message.chat.id, c.message.id)
+        return
+
+    i_view = InvitationView(invitation)
+    kb = i_view.get_keyboard()
+
+    if not i_view.house:
+        kb = types.InlineKeyboardMarkup()
+        kb.add(types.InlineKeyboardButton(
+            text=f"🔙Назад", callback_data=INVITATION_LIST_CALLBACK
+        ))
+        bot.answer_callback_query(c.id, "🤕Ойойой...", show_alert=False)
+        bot.edit_message_text(f"🤕Дім з запрошення №{invitation_id} вже знесли.",
+                              c.message.chat.id, c.message.id, reply_markup=kb)
+        return
+
+    kb.add(types.InlineKeyboardButton(
+        text=f"🔙Назад", callback_data=INVITATION_LIST_CALLBACK
+    ))
+
+    bot.edit_message_text(i_view.get_text(), c.message.chat.id, c.message.id, reply_markup=kb,
                           parse_mode="Markdown")
 
 

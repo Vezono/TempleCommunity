@@ -50,6 +50,7 @@ class Database:
             participant = InvitationParticipant(user=jew, invitation_id=invitation.id)
             participant.save()
             participants.append(participant)
+        invitation.participants = participants
         invitation.save()
         return invitation
 

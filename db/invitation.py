@@ -5,7 +5,7 @@ from .invitation_participant import InvitationParticipant
 
 
 class Invitation(Document):
-    id = SequenceField(primary_key=True, collection_name="invitation")
+    id = SequenceField(primary_key=True, collection_name="invitation_sequencer")
     goi_id = IntField()
     house_id = StringField()
 
@@ -36,7 +36,7 @@ class Invitation(Document):
     def pending(self) -> Iterable[InvitationParticipant]:
         for participant in self.participants:
             participant: InvitationParticipant
-            if participant.status == 'pending':
+            if participant.status == 'pending' or not participant.status:
                 yield participant
 
     @property

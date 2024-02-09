@@ -50,18 +50,23 @@ class InvitationView(View):
         )
         return kb
 
-    def get_text(self):
+    def get_info_text(self):
         goi_text = 'Жид'
         if self.goi.status == 'goi':
             goi_text = 'Гой'
 
         tts = (f"*📇Запрошення* №{self.invitation.id}\n"
                f"🏛Дім: {self.house.name}\n"
-               f"👤{goi_text}: {self.goi.name}\n\n"
-               f"*✍️Підписи жидів*:\n")
+               f"👤{goi_text}: {self.goi.name}\n\n")
+
+        return tts.replace("_", "\\_")
+
+    def get_text(self):
+        tts = self.get_info_text()
+        tts += f"*✍️Підписи жидів*:\n"
 
         for participant in self.invitation.participants:
-            if participant.status == 'pending' or participant.status == '':
+            if participant.status == 'pending' or not participant.status:
                 emoji = "⏳"
             elif participant.status == "approved":
                 emoji = "✅"
@@ -81,5 +86,5 @@ class InvitationView(View):
         if self.invitation.ready:
             tts += "\n♻️Запрошення затверджено."
 
-        return tts
+        return tts.replace("_", "\\_")
 

@@ -16,9 +16,14 @@ class ToraController(Controller):
         return ToraView()
 
     @router.register_callback(MAIN_HELP_CALLBACK)
+    def main(context: Context):
+        return ToraView()
+
+    @router.register_callback(CHAT_RULES_CALLBACK)
     def chat_rules_callback(context: Context):
         return ToraBasicItemView(
-            "Верховна Жриця тримає правила <a href='https://t.me/c/1958799638/106716'>ось тут</a>. Почитайте.")
+            "Верховна Жриця тримає правила <a href='https://t.me/c/1958799638/106716'>ось тут</a>. Почитайте.",
+            "HTML")
 
     @router.register_callback(ROLE_HELP_CALLBACK)
     def chat_rules_callback(context: Context):
