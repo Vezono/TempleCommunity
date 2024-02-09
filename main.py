@@ -365,4 +365,4 @@ def invitation_approve(c: types.CallbackQuery):
 
 
 print("Храмова система запущена. Успішного прогрівання.")
-bot.polling()
+bot.infinity_polling()
