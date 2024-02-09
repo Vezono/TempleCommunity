@@ -1,8 +1,12 @@
+import typing
+import uuid
 from typing import Optional
 
 from mongoengine import connect
 from config import mongourl
 from db.house import House
+from db.invitation import Invitation
+from db.invitation_participant import InvitationParticipant
 from db.user import User
 
 
@@ -27,10 +31,31 @@ class Database:
         except:
             pass
 
+    def get_invitation(self, invitation_id: int) -> Optional[Invitation]:
+        try:
+            return Invitation.objects.get(id=invitation_id)
+        except:
+            pass
+
     def create_house(self, house_id: str, name: str):
         house = House(id=house_id, name=name)
         house.save()
         return house
+
+    def create_invitation(self, goi_id: int, house_id: str):
+        jews = list(self.get_jews(house_id))
+        participants = []
+        invitation = Invitation(goi_id=goi_id, house_id=house_id)
+        for jew in jews:
+            participant = InvitationParticipant(user=jew, invitation_id=invitation.id)
+            participant.save()
+            participants.append(participant)
+        invitation.save()
+        return invitation
+
+    def get_invitations(self, goi_id: int) -> typing.Iterable[Invitation]:
+        for invitation in Invitation.objects(goi_id=goi_id):
+            yield invitation
 
     def get_jews(self, house_id: str):
         for user in User.objects(house=house_id):

@@ -1,6 +1,7 @@
 import math
 
 from telebot import TeleBot
+from telebot import types
 
 
 class Bot(TeleBot):
@@ -9,6 +10,10 @@ class Bot(TeleBot):
 
     def respond_to(self, message, text, **kwargs):
         return self.send_message(message.chat.id, text, **kwargs)
+
+    def edit_menu(self, callback: types.CallbackQuery, text, keyboard, **kwargs):
+        return self.edit_message_text(text, callback.message.chat.id, callback.message.id, reply_markup=keyboard,
+                                      **kwargs)
 
 
 class MatrixIndexCounter:
