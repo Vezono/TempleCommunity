@@ -8,7 +8,7 @@ from views.tora_basic_item_view import ToraBasicItemView
 
 class FinanceController(Controller):
     def __init__(self):
-        pass
+        super().__init__()
 
     @router.register_command('tora')
     def tora(context: Context):

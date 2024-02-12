@@ -29,6 +29,15 @@ class Router:
             self.routes.append(route)
             return func
         return decorator
+    
+    
+    def register_commands(self, commands):
+        def decorator(func):
+            for command in commands:
+                route = Route(command, lambda req: func, UpdateType.Command)
+                self.routes.append(route)
+            return func
+        return decorator
 
     def register_callback(self, callback):
         def decorator(func):

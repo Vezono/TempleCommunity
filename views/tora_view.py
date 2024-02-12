@@ -16,7 +16,7 @@ class ToraView (View):
         )
         kb.add(
             types.InlineKeyboardButton(text="🏡Доми", callback_data=HOUSE_HELP_CALLBACK),
-            types.InlineKeyboardButton(text="✡️Жиди та гої", callback_data=JEWISH_HELP_CALLBACK)
+            types.InlineKeyboardButton(text="✡️Євреї та гої", callback_data=JEWISH_HELP_CALLBACK)
         )
         kb.add(
             types.InlineKeyboardButton(text="💻Команди (як щось зробити?)", callback_data=COMMANDS_HELP_CALLBACK)

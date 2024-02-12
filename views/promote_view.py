@@ -1,16 +1,17 @@
+import typing
+
 from telebot import types
 
 from constants import *
 from db import db
+from db.house import House
+from utils import MatrixIndexPlacer
 from core.view import View
 
 
-class InvitationView(View):
-    def __init__(self, invitation):
+class PromoteView(View):
+    def __init__(self):
         super().__init__()
-        self.invitation = invitation
-        self.house = db.get_house(invitation.house_id)
-        self.goi = db.get_user(invitation.goi_id)
 
     def get_keyboard(self):
         kb = types.InlineKeyboardMarkup()
@@ -21,7 +22,7 @@ class InvitationView(View):
 
         kb.add(
             types.InlineKeyboardButton(
-                text=f"✅Прийняти",
+                text=f"✅Промоут",
                 callback_data=f"{INVITATION_APPROVE_CALLBACK} {self.invitation.id}"
             ),
             types.InlineKeyboardButton(
@@ -34,20 +35,6 @@ class InvitationView(View):
             )
         )
 
-        kb.add(
-            types.InlineKeyboardButton(text="Кнопки вступаючого:", callback_data="-")
-        )
-
-        kb.add(
-            types.InlineKeyboardButton(
-                text=f"🏃‍♀️Вступити",
-                callback_data=f"{GOI_ACCEPT} {self.invitation.id}"
-            ),
-            types.InlineKeyboardButton(
-                text=f"🙅Не вступати",
-                callback_data=f"{GOI_DECLINE} {self.invitation.id}"
-            )
-        )
         return kb
 
     def get_info_text(self):
@@ -87,4 +74,6 @@ class InvitationView(View):
             tts += "\n♻️Запрошення затверджено."
 
         return tts.replace("_", "\\_")
+
+
 

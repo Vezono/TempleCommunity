@@ -22,3 +22,7 @@ class Context:
     def __str__(self):
         return (f"({self.message.text if self.message else ''}, {self.callback.data if self.callback else ''},"
                 f" {self.type})")
+
+    def answer_callback_query(self, text):
+        return self.bot.answer_callback_query(self.callback.id, text, show_alert=False)
+

@@ -34,7 +34,7 @@ class User(Document):
         if self.status == 'goi':
             return "гой"
         elif self.status == 'jew':
-            return "жид"
+            return "єврей"
         else:
             return "невідомий"
 
