@@ -1,0 +1,22 @@
+version: 27
+jobs:
+- name: build-docker-image
+  steps:
+  - !CheckoutStep
+    name: checkout
+    cloneCredential: !DefaultCredential {}
+    withLfs: false
+    withSubmodules: false
+    cloneDepth: 1
+    condition: ALL_PREVIOUS_STEPS_WERE_SUCCESSFUL
+  - !BuildImageStep
+    name: build-docker-image
+    tags: '@server@/vezono/temple-community/temple-community:latest'
+    publish: true
+    builtInRegistryAccessTokenSecret: onedev-access-token
+    removeDanglingImages: true
+    condition: ALL_PREVIOUS_STEPS_WERE_SUCCESSFUL
+  retryCondition: never
+  maxRetries: 3
+  retryDelay: 30
+  timeout: 3600
