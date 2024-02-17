@@ -19,6 +19,7 @@ jobs:
   triggers:
   - !BranchUpdateTrigger
     branches: master
+    paths: -.onedev-buildspec.yml -.gitignore
   retryCondition: never
   maxRetries: 3
   retryDelay: 30
@@ -32,6 +33,9 @@ jobs:
     passwordSecret: github-temple-community
     force: false
     condition: ALL_PREVIOUS_STEPS_WERE_SUCCESSFUL
+  triggers:
+  - !BranchUpdateTrigger
+    branches: master
   retryCondition: never
   maxRetries: 3
   retryDelay: 30
