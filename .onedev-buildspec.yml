@@ -23,3 +23,16 @@ jobs:
   maxRetries: 3
   retryDelay: 30
   timeout: 3600
+- name: push-to-github
+  steps:
+  - !PushRepository
+    name: push-to-github
+    remoteUrl: https://github.com/Vezono/TempleCommunity
+    userName: Vezono
+    passwordSecret: github-temple-community
+    force: false
+    condition: ALL_PREVIOUS_STEPS_WERE_SUCCESSFUL
+  retryCondition: never
+  maxRetries: 3
+  retryDelay: 30
+  timeout: 3600
