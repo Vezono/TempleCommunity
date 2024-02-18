@@ -3,7 +3,7 @@ import uuid
 from typing import Optional
 
 from mongoengine import connect
-from config import mongourl
+from config import mongo_url
 from db.house import House
 from db.invitation import Invitation
 from db.invitation_participant import InvitationParticipant
@@ -12,7 +12,7 @@ from db.user import User
 
 class Database:
     def __init__(self):
-        connect(host=mongourl, db='temple')
+        connect(host=mongo_url, db='temple')
 
     def get_user(self, user_id: int) -> Optional[User]:
         try:
