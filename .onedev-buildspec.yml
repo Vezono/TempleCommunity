@@ -1,4 +1,7 @@
 version: 27
+imports:
+- projectPath: public/ci-templates
+  revision: master
 jobs:
 - name: build-docker-image
   steps:
@@ -9,12 +12,13 @@ jobs:
     withSubmodules: false
     cloneDepth: 1
     condition: ALL_PREVIOUS_STEPS_WERE_SUCCESSFUL
-  - !BuildImageStep
+  - !UseTemplateStep
+    name: build-version
+    templateName: Get build version
+    condition: ALL_PREVIOUS_STEPS_WERE_SUCCESSFUL
+  - !UseTemplateStep
     name: build-docker-image
-    tags: '@server@/vezono/temple-community/temple-community:latest'
-    publish: true
-    builtInRegistryAccessTokenSecret: onedev-access-token
-    removeDanglingImages: true
+    templateName: Build docker Image
     condition: ALL_PREVIOUS_STEPS_WERE_SUCCESSFUL
   triggers:
   - !BranchUpdateTrigger
